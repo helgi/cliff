@@ -54,6 +54,7 @@ class App(object):
     :param interactive_app_factory: callable to create an
                                     interactive application
     :paramtype interactive_app_factory: cliff.interactive.InteractiveApp
+    :paramtype interactive: If interactive behaviour is on or not
     """
 
     NAME = os.path.splitext(os.path.basename(sys.argv[0]))[0]
@@ -66,7 +67,8 @@ class App(object):
 
     def __init__(self, description, version, command_manager,
                  stdin=None, stdout=None, stderr=None,
-                 interactive_app_factory=InteractiveApp):
+                 interactive_app_factory=InteractiveApp,
+                 interactive=True):
         """Initialize the application.
         """
         self.command_manager = command_manager
@@ -75,6 +77,7 @@ class App(object):
         self._set_streams(stdin, stdout, stderr)
         self.interactive_app_factory = interactive_app_factory
         self.parser = self.build_option_parser(description, version)
+        self.enable_interactive_mode = interactive
         self.interactive_mode = False
         self.interpreter = None
 
@@ -197,7 +200,8 @@ class App(object):
         try:
             self.options, remainder = self.parser.parse_known_args(argv)
             self.configure_logging()
-            self.interactive_mode = not remainder
+            if self.enable_interactive_mode:
+                self.interactive_mode = not remainder
             self.initialize_app(remainder)
         except Exception as err:
             if hasattr(self, 'options'):
@@ -303,3 +307,4 @@ class App(object):
                 else:
                     LOG.error('Could not clean up: %s', err3)
         return result
+
